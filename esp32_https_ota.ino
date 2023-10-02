@@ -92,7 +92,7 @@ int Check_FW_Version(void) {
     delete client;
   }
 
-  if (httpCode == HTTP_CODE_OK)  // if version received
+  if (httpCode == HTTP_CODE_OK) 
   {
     https_payload.trim();
     if (https_payload.equals(current_FW_VER)) {
