@@ -8,92 +8,20 @@ const char * ssid = "esp";
 const char * password = "esp32pass";
 
 
-String FirmwareVer = {
-  "2.0"
-};
-#define URL_fw_Version "https://raw.githubusercontent.com/programmer131/ESP8266_ESP32_SelfUpdate/master/esp32_ota/bin_version.txt"
-#define URL_fw_Bin "https://raw.githubusercontent.com/programmer131/ESP8266_ESP32_SelfUpdate/master/esp32_ota/fw.bin"
+String current_FW_VER = {"1.0"};
 
-//#define URL_fw_Version "http://cade-make.000webhostapp.com/version.txt"
-//#define URL_fw_Bin "http://cade-make.000webhostapp.com/firmware.bin"
+#define URL_FW_VER "https://-----------/fw_version.txt"
+#define URL_FW_BIN "https://-----------/firmware.bin"
 
-void connect_wifi();
-void firmwareUpdate();
-int FirmwareVersionCheck();
-
-unsigned long previousMillis = 0; // will store last time LED was updated
-unsigned long previousMillis_2 = 0;
-const long interval = 60000;
-const long mini_interval = 1000;
-void repeatedCall() {
-  static int num=0;
-  unsigned long currentMillis = millis();
-  if ((currentMillis - previousMillis) >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-    if (FirmwareVersionCheck()) {
-      firmwareUpdate();
-    }
-  }
-  if ((currentMillis - previousMillis_2) >= mini_interval) {
-    previousMillis_2 = currentMillis;
-    Serial.print("idle loop...");
-    Serial.print(num++);
-    Serial.print(" Active fw version:");
-    Serial.println(FirmwareVer);
-   if(WiFi.status() == WL_CONNECTED) 
-   {
-       Serial.println("wifi connected");
-   }
-   else
-   {
-    connect_wifi();
-   }
-  }
-}
-
-struct Button {
-  const uint8_t PIN;
-  uint32_t numberKeyPresses;
-  bool pressed;
-};
-
-Button button_boot = {
-  0,
-  0,
-  false
-};
-/*void IRAM_ATTR isr(void* arg) {
-    Button* s = static_cast<Button*>(arg);
-    s->numberKeyPresses += 1;
-    s->pressed = true;
-}*/
-
-void IRAM_ATTR isr() {
-  button_boot.numberKeyPresses += 1;
-  button_boot.pressed = true;
-}
-
+void Update_Firmware();
+int Check_FW_Version();
 
 void setup() {
-  pinMode(button_boot.PIN, INPUT);
-  attachInterrupt(button_boot.PIN, isr, RISING);
   Serial.begin(115200);
-  Serial.print("Active firmware version:");
-  Serial.println(FirmwareVer);
-  pinMode(2, OUTPUT);
-  connect_wifi();
-}
-void loop() {
-  if (button_boot.pressed) { //to connect wifi via Android esp touch app 
-    Serial.println("Firmware update Starting..");
-    firmwareUpdate();
-    button_boot.pressed = false;
-  }
-  repeatedCall();
-}
+  Serial.print("Current firmware version:");
+  Serial.println(current_FW_VER);
 
-void connect_wifi() {
+  pinMode(2, OUTPUT);
   Serial.println("Waiting for WiFi");
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -106,13 +34,22 @@ void connect_wifi() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 }
+void loop() {
+
+    // Update_Firmware();
+
+    Check_FW_Version();
+
+    delay(5000);
+
+}
 
 
-void firmwareUpdate(void) {
+void Update_Firmware(void) {
   WiFiClientSecure client;
   client.setCACert(rootCACertificate);
   httpUpdate.setLedPin(2, LOW);
-  t_httpUpdate_return ret = httpUpdate.update(client, URL_fw_Bin);
+  t_httpUpdate_return ret = httpUpdate.update(client, URL_FW_BIN);
 
   switch (ret) {
   case HTTP_UPDATE_FAILED:
@@ -128,24 +65,22 @@ void firmwareUpdate(void) {
     break;
   }
 }
-int FirmwareVersionCheck(void) {
-  String payload;
+int Check_FW_Version(void) {
+  String https_payload;
   int httpCode;
-  String fwurl = "";
-  fwurl += URL_fw_Version;
-  fwurl += "?";
-  fwurl += String(rand());
-  Serial.println(fwurl);
+  String ota_url = "";
+  ota_url += URL_FW_VER;
+  ota_url += "?";
+  ota_url += String(rand());
+  Serial.println(ota_url);
   WiFiClientSecure * client = new WiFiClientSecure;
 
   if (client) 
   {
     client -> setCACert(rootCACertificate);
-
-    // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is 
     HTTPClient https;
 
-    if (https.begin( * client, fwurl)) 
+    if (https.begin( * client, ota_url)) 
     { // HTTPS      
       Serial.print("[HTTPS] GET...\n");
       // start connection and send HTTP header
@@ -154,7 +89,7 @@ int FirmwareVersionCheck(void) {
       delay(100);
       if (httpCode == HTTP_CODE_OK) // if version received
       {
-        payload = https.getString(); // save received version
+        https_payload = https.getString(); // save received version
       } else {
         Serial.print("error in downloading version file:");
         Serial.println(httpCode);
@@ -166,14 +101,14 @@ int FirmwareVersionCheck(void) {
       
   if (httpCode == HTTP_CODE_OK) // if version received
   {
-    payload.trim();
-    if (payload.equals(FirmwareVer)) {
-      Serial.printf("\nDevice already on latest firmware version:%s\n", FirmwareVer);
+    https_payload.trim();
+    if (https_payload.equals(current_FW_VER)) {
+      Serial.printf("\nDevice already on latest firmware version:%s\n", current_FW_VER);
       return 0;
     } 
     else 
     {
-      Serial.println(payload);
+      Serial.println(https_payload);
       Serial.println("New firmware detected");
       return 1;
     }
