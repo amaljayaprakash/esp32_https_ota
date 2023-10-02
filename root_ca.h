@@ -1,6 +1,6 @@
-#ifndef GIT_CERT_H
+#ifndef ROOT_CA_H
 
-#define GIT_CERT_H
+#define ROOT_CA_H
 
 const char * rootCACertificate = \
 "-----BEGIN CERTIFICATE-----\n" \
