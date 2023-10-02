@@ -4,13 +4,13 @@
 #include <WiFiClientSecure.h>
 #include "root_ca.h"
 
-const char* ssid = "esp";
-const char* password = "esp32pass";
+const char* ssid = "YourSSID";
+const char* password = "YourPassword";
 
 String current_FW_VER = { "1.0" };
 
-#define URL_FW_VER "https://raw.githubusercontent.com/amaljayaprakash/esp32_https_ota/main/fw_version.txt"
-#define URL_FW_BIN "https://raw.githubusercontent.com/amaljayaprakash/esp32_https_ota/main/firmware.bin"
+#define URL_FW_VER "https://<your-github-raw-file-location>/fw_version.txt"
+#define URL_FW_BIN "https://<your-github-raw-file-location>/firmware.bin"
 
 void Update_Firmware();
 int Check_FW_Version();
@@ -34,7 +34,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 }
 void loop() {
-  delay(3000);
+  delay(10000);
 
   if (Check_FW_Version()) {
     Update_Firmware();
