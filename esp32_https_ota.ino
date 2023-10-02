@@ -10,8 +10,8 @@ const char * password = "esp32pass";
 
 String current_FW_VER = {"1.0"};
 
-#define URL_FW_VER "https://-----------/fw_version.txt"
-#define URL_FW_BIN "https://-----------/firmware.bin"
+#define URL_FW_VER "https://raw.githubusercontent.com/amaljayaprakash/esp32_https_ota/main/fw_version.txt"
+#define URL_FW_BIN "https://raw.githubusercontent.com/amaljayaprakash/esp32_https_ota/main/firmware_esp.bin"
 
 void Update_Firmware();
 int Check_FW_Version();
