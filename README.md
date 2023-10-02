@@ -19,7 +19,6 @@ Before implementing HTTPS OTA on your ESP32 device, make sure you have the follo
 - A computer with the Arduino IDE and ESP32 board support installed.
 - Access to a web server with HTTPS capabilities.
 - A valid SSL/TLS certificate for your server's domain.
-- The `ESP8266HTTPClient` and `ESP8266httpUpdate` libraries installed in your Arduino IDE.
 
 ## Setting up the HTTPS Server
 
